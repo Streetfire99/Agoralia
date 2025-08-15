@@ -52,7 +52,7 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
     try:
         # Retell.verify accepts raw bytes or string; pass bytes to avoid encoding issues
         is_valid = Retell.verify(raw_body, api_key, x_retell_signature)
-                    except Exception:
+    except Exception:
         raise HTTPException(status_code=400, detail="Signature verification error")
 
     if not is_valid:
