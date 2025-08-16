@@ -40,7 +40,7 @@ def healthcheck() -> dict:
 @app.get("/me/usage")
 def get_me_usage() -> dict:
     # Minimal stub for staging; replace with real billing aggregation
-        return {
+    return {
         "minutes_mtd": 0,
         "minutes_cap": 1000,
     }
@@ -61,7 +61,7 @@ async def webhook_retell(request: Request, x_retell_signature: str | None = Head
     try:
         # Retell.verify accepts raw bytes or string; pass bytes to avoid encoding issues
         is_valid = Retell.verify(raw_body, api_key, x_retell_signature)
-                    except Exception:
+    except Exception:
         raise HTTPException(status_code=400, detail="Signature verification error")
 
     if not is_valid:
