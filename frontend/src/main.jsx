@@ -1,17 +1,47 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import './index.css'
+import Dashboard from './pages/Dashboard.jsx'
+import Leads from './pages/Leads.jsx'
+import Settings from './pages/Settings.jsx'
+import Admin from './pages/Admin.jsx'
 
-function App() {
+function Nav() {
+	const navStyle = { display: 'flex', gap: 12, padding: 12, borderBottom: '1px solid #eee' }
 	return (
-		<div style={{ padding: '24px', fontFamily: 'system-ui, sans-serif' }}>
-			<h1>Agoralia</h1>
-			<p>Deployment check OK.</p>
+		<nav style={navStyle}>
+			<Link to="/">Dashboard</Link>
+			<Link to="/leads">Leads</Link>
+			<Link to="/settings">Settings</Link>
+			<Link to="/admin">Admin</Link>
+		</nav>
+	)
+}
+
+function AppShell() {
+	const wrap = { maxWidth: 1200, margin: '0 auto', padding: 16 }
+	return (
+		<div>
+			<Nav />
+			<main style={wrap}>
+				<Routes>
+					<Route path="/" element={<Dashboard />} />
+					<Route path="/leads" element={<Leads />} />
+					<Route path="/settings" element={<Settings />} />
+					<Route path="/admin" element={<Admin />} />
+					<Route path="*" element={<Navigate to="/" replace />} />
+				</Routes>
+			</main>
 		</div>
 	)
 }
 
 const rootEl = document.getElementById('root')
 if (rootEl) {
-	createRoot(rootEl).render(<App />)
+	createRoot(rootEl).render(
+		<BrowserRouter>
+			<AppShell />
+		</BrowserRouter>
+	)
 }
