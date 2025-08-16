@@ -141,3 +141,6 @@ temp/
 
 # Vercel
 .vercel/
+
+# Allow committing public locales
+!frontend/public/locales/

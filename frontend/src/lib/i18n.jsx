@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-const LOCALES = ['en-US','it-IT','fr-FR','ar-EG','hi-IN']
-const modules = import.meta.glob('../locales/**/*.json', { eager: true })
+const I18nCtx = createContext({ t: (k)=>k, locale: 'en-US', setLocale: ()=>{} })
 
 function deepMerge(a, b) {
 	const out = { ...a }
@@ -14,37 +13,49 @@ function deepMerge(a, b) {
 	return out
 }
 
-function isRtl(locale) {
-	return locale.startsWith('ar')
+function isRtl(locale) { return locale.startsWith('ar') }
+
+async function loadJsonSafe(path) {
+	try {
+		const res = await fetch(path, { cache: 'no-store' })
+		if (!res.ok) return {}
+		return await res.json()
+	} catch { return {} }
 }
 
-const I18nCtx = createContext({ t: (k)=>k, locale: 'en-US', setLocale: ()=>{} })
+async function loadMessages(locale) {
+	const baseApp = await loadJsonSafe('/locales/en-US/app.json')
+	const baseCommon = await loadJsonSafe('/locales/en-US/common.json')
+	const basePages = await loadJsonSafe('/locales/en-US/pages.json')
+	let app = {}, common = {}, pages = {}
+	if (locale !== 'en-US') {
+		app = await loadJsonSafe(`/locales/${locale}/app.json`)
+		common = await loadJsonSafe(`/locales/${locale}/common.json`)
+		pages = await loadJsonSafe(`/locales/${locale}/pages.json`)
+	}
+	return deepMerge(deepMerge(baseApp, app), deepMerge(deepMerge(baseCommon, common), deepMerge(basePages, pages)))
+}
 
 export function I18nProvider({ children }) {
 	const [locale, setLocale] = useState(localStorage.getItem('ui_locale') || 'en-US')
-	const messages = useMemo(() => {
-		const [lang, region] = locale.split('-')
-		const base = modules[`../locales/en-US/app.json`]?.default || {}
-		const baseCommon = modules[`../locales/en-US/common.json`]?.default || {}
-		const basePages = modules[`../locales/en-US/pages.json`]?.default || {}
-		const locApp = modules[`../locales/${locale}/app.json`]?.default || modules[`../locales/${lang}-${region}/app.json`]?.default || {}
-		const locCommon = modules[`../locales/${locale}/common.json`]?.default || modules[`../locales/${lang}-${region}/common.json`]?.default || {}
-		const locPages = modules[`../locales/${locale}/pages.json`]?.default || modules[`../locales/${lang}-${region}/pages.json`]?.default || {}
-		return deepMerge(deepMerge(base, locApp), deepMerge(deepMerge(baseCommon, locCommon), deepMerge(basePages, locPages)))
-	}, [locale])
+	const [messages, setMessages] = useState({})
 	useEffect(() => {
+		let cancelled = false
+		;(async () => {
+			const data = await loadMessages(locale)
+			if (!cancelled) setMessages(data)
+		})()
 		localStorage.setItem('ui_locale', locale)
 		document.documentElement.lang = locale
 		document.documentElement.dir = isRtl(locale) ? 'rtl' : 'ltr'
+		return () => { cancelled = true }
 	}, [locale])
 	function t(key, vars) {
 		const parts = key.split('.')
 		let cur = messages
 		for (const p of parts) cur = cur?.[p]
 		if (cur == null) return key
-		if (vars) {
-			return String(cur).replace(/\{(\w+)\}/g, (_, k)=> vars[k] ?? `{${k}}`)
-		}
+		if (vars) return String(cur).replace(/\{(\w+)\}/g, (_, k)=> vars[k] ?? `{${k}}`)
 		return cur
 	}
 	return (
