@@ -1,0 +1,10 @@
+{
+  "common": {
+    "refresh": "Rafraîchir",
+    "save": "Enregistrer",
+    "clear": "Effacer",
+    "loading": "Chargement…",
+    "remove": "Retirer"
+  }
+}
+
