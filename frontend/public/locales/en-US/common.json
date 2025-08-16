@@ -1,0 +1,10 @@
+{
+  "common": {
+    "refresh": "Refresh",
+    "save": "Save",
+    "clear": "Clear",
+    "loading": "Loading…",
+    "remove": "Remove"
+  }
+}
+
