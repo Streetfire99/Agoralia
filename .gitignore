@@ -21,6 +21,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Allow frontend src lib to be committed
+!frontend/src/lib/
+
 # Virtual environments
 venv/
 env/
